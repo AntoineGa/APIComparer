@@ -6,163 +6,66 @@ namespace APIComparer
 
     public class APIUpgradeToMarkdownFormatter
     {
-        public void WriteOut(Diff diff, TextWriter writer, FormattingInfo info)
+        public void WriteOut(ApiChanges apiChanges, TextWriter writer, FormattingInfo info)
         {
-            if (diff is EmptyDiff)
+            if (apiChanges.NoLongerSupported)
             {
                 writer.WriteLine("No longer supported");
                 return;
             }
 
-            var removePublicTypes = diff.RemovedPublicTypes().ToList();
-            if (removePublicTypes.Any())
+            if (apiChanges.RemovedTypes.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## The following public types have been removed.");
+                writer.WriteLine("## The following public types is no longer available");
                 writer.WriteLine();
-                foreach (var type in removePublicTypes)
+                foreach (var type in apiChanges.RemovedTypes)
                 {
-                    writer.WriteLine("- `{0}`", type.GetName());
-                }
-                writer.WriteLine();
-            }
-            var typesChangedToNonPublic = diff.TypesChangedToNonPublic().ToList();
-            if (typesChangedToNonPublic.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("## The following public types have been made internal.");
-                writer.WriteLine();
-                foreach (var type in typesChangedToNonPublic)
-                {
-                    writer.WriteLine("- `{0}`", type.RightType.GetName());
+                    writer.Write($"- `{type.Name}`");
+
+                    if (type.MadeInternal)
+                    {
+                        writer.WriteLine(" (Made internal)");
+                    }
+                    else
+                    {
+                        writer.WriteLine(" (Removed)");
+                    }
                 }
                 writer.WriteLine();
             }
 
-            var matchingTypeDiffs = diff.MatchingTypeDiffs.ToList();
-            if (matchingTypeDiffs.Any())
+            if (apiChanges.ChangedTypes.Any())
             {
                 writer.WriteLine();
                 writer.WriteLine("## The following types have differences.");
                 writer.WriteLine();
-                foreach (var typeDiff in diff.MatchingTypeDiffs)
+                foreach (var changedType in apiChanges.ChangedTypes)
                 {
-                    if (!typeDiff.LeftType.IsPublic)
+                    writer.WriteLine();
+                    writer.Write("### {0}", HttpUtility.HtmlEncode(changedType.Name));
+
+                    if (changedType.Obsoleted)
                     {
-                        continue;
+                        writer.Write("(Obsoleted)");
                     }
-                    if (!typeDiff.RightType.IsPublic)
+
+                    writer.WriteLine();
+
+                    if (changedType.Obsoleted)
                     {
-                        continue;
+                        writer.WriteLine(changedType.ObsoleteDetails.Message);
                     }
-                    if (typeDiff.HasDifferences())
+
+                    foreach (var typeChange in changedType.TypeChanges)
                     {
-                        WriteOut(typeDiff, writer, info);
+                        writer.WriteLine();
+                        writer.WriteLine($"* {typeChange.Name} - {typeChange.Description}");
+                        writer.WriteLine();
                     }
+                    writer.WriteLine();
                 }
             }
-        }
-
-        void WriteOut(TypeDiff typeDiff, TextWriter writer, FormattingInfo info)
-        {
-            var typeObsoleted = typeDiff.TypeObsoleted();
-            writer.WriteLine();
-            writer.Write("### {0}", HttpUtility.HtmlEncode(typeDiff.RightType.GetName()));
-            if (typeObsoleted)
-            {
-                writer.Write("(Obsoleted)");
-            }
-
-            writer.WriteLine();
-
-            if (typeObsoleted)
-            {
-                writer.WriteLine(typeDiff.RightType.GetObsoleteString());
-            }
-
-            WriteFields(typeDiff, writer);
-            WriteMethods(typeDiff, writer, info);
-
-            writer.WriteLine();
-        }
-
-        void WriteFields(TypeDiff typeDiff, TextWriter writer)
-        {
-            var changedToNonPublic = typeDiff.FieldsChangedToNonPublic().ToList();
-            if (changedToNonPublic.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Fields changed to non-public");
-                writer.WriteLine();
-                foreach (var field in changedToNonPublic)
-                {
-                    writer.WriteLine("  - `{0}`", field.Right.GetName());
-                }
-            }
-
-            var removed = typeDiff.PublicFieldsRemoved().ToList();
-            if (removed.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Fields Removed");
-                writer.WriteLine();
-                foreach (var field in removed)
-                {
-                    writer.WriteLine("  - `{0}`", field.GetName());
-                }
-            }
-
-            var obsoleted = typeDiff.PublicFieldsObsoleted().ToList();
-            if (obsoleted.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Fields Obsoleted");
-                writer.WriteLine();
-                foreach (var field in obsoleted)
-                {
-                    writer.WriteLine("  - `{0}`: {1}", field.Right.GetName(), field.Right.GetObsoleteString());
-                }
-            }
-        }
-
-        void WriteMethods(TypeDiff typeDiff, TextWriter writer, FormattingInfo info)
-        {
-            var changedToNonPublic = typeDiff.MethodsChangedToNonPublic().ToList();
-            if (changedToNonPublic.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Methods changed to non-public");
-                writer.WriteLine();
-                foreach (var method in changedToNonPublic)
-                {
-                    writer.WriteLine("  - `{0}`", method.Left.GetName());
-                }
-            }
-
-            var removed = typeDiff.PublicMethodsRemoved().ToList();
-            if (removed.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Methods Removed");
-                writer.WriteLine();
-                foreach (var method in removed)
-                {
-                    writer.WriteLine("  - `{0}`", method.GetName());
-                }
-            }
-
-            var obsoleted = typeDiff.PublicMethodsObsoleted().ToList();
-            if (obsoleted.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("#### Methods Obsoleted");
-                writer.WriteLine();
-                foreach (var method in obsoleted)
-                {
-                    writer.WriteLine("  - `{0}`: {1}", method.Right.GetName(), method.Right.GetObsoleteString());
-                }
-            }
-
         }
     }
 }

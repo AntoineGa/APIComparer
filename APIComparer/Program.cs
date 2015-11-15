@@ -74,7 +74,7 @@ class Program
             using (var into = new StreamWriter(fileStream))
             {
                 var formatter = new APIUpgradeToMarkdownFormatter();
-                formatter.WriteOut(diff, into, new FormattingInfo("tbd", "tbd"));
+                formatter.WriteOut(new ApiChanges(diff), into, new FormattingInfo("tbd", "tbd"));
 
                 into.Flush();
                 into.Close();
