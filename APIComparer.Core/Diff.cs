@@ -35,19 +35,43 @@
             }
 
             RemovedTypes.AddRange(diff.RemovedPublicTypes()
-                .Select(r=>new RemovedType
+                .Select(r => new RemovedType
                 {
                     Name = r.Name,
-                    IsBreaking = true,
                     MadeInternal = false
                 }));
+
             RemovedTypes.AddRange(diff.TypesChangedToNonPublic()
-                   .Select(r => new RemovedType
-                   {
-                       Name = r.LeftType.Name,
-                       IsBreaking = true,
-                       MadeInternal = true
-                   }));
+                .Select(r => new RemovedType
+                {
+                    Name = r.LeftType.Name,
+                    MadeInternal = true
+                }));
+
+            foreach (var typeDiff in diff.MatchingTypeDiffs)
+            {
+                if (!typeDiff.RightType.IsPublic)
+                {
+                    continue;
+                }
+
+                var changedType = new ChangedType
+                {
+                    Name = typeDiff.LeftType.Name
+                };
+
+
+                if (typeDiff.TypeObsoleted())
+                {
+                    var obsoleteDetails = new ChangedType.ObsoleteInfo
+                    {
+                        Message = typeDiff.RightType.GetObsoleteString()
+                    };
+
+                    changedType.ObsoleteDetails = obsoleteDetails;
+                }
+                ChangedTypes.Add(changedType);
+            }
         }
 
         public bool NoLongerSupported { get; set; }
@@ -55,23 +79,25 @@
         public List<RemovedType> RemovedTypes { get; set; }
 
         public List<ChangedType> ChangedTypes { get; set; }
-
     }
-    public class ApiChange
+
+    public class ChangedType
     {
+        public ChangedType()
+        {
+            TypeChanges = new List<TypeChange>();
+        }
+
         public bool IsBreaking { get; set; }
-    }
 
-    public class ChangedType : ApiChange
-    {
-        public bool Obsoleted { get; set; }
+        public bool Obsoleted => ObsoleteDetails != null;
         public ObsoleteInfo ObsoleteDetails { get; set; }
 
         public List<TypeChange> TypeChanges { get; set; }
         public string Name { get; set; }
 
         public class TypeChange
-        {   
+        {
             public bool IsField { get; set; }
 
             public string Name { get; set; }
@@ -81,7 +107,8 @@
 
         public class ObsoleteInfo
         {
-            public bool AsError { get; set; }
+            //todo
+            //public bool AsError { get; set; }
             public string Message { get; set; }
 
             //todo: we can parse the message and give version info if possible (obsoleteex)
@@ -89,13 +116,13 @@
     }
 
 
-    public class RemovedType : ApiChange
+    public class RemovedType
     {
         public bool MadeInternal { get; set; }
         public string Name { get; set; }
     }
 
-    public class AddedType : ApiChange
+    public class AddedType
     {
     }
 }

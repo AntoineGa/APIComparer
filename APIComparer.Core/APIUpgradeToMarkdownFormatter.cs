@@ -47,7 +47,7 @@ namespace APIComparer
 
                     if (changedType.Obsoleted)
                     {
-                        writer.Write("(Obsoleted)");
+                        writer.Write(" (Obsoleted)");
                     }
 
                     writer.WriteLine();
@@ -60,7 +60,7 @@ namespace APIComparer
                     foreach (var typeChange in changedType.TypeChanges)
                     {
                         writer.WriteLine();
-                        writer.WriteLine($"* {typeChange.Name} - {typeChange.Description}");
+                        writer.WriteLine($"- `{typeChange.Name}` - {typeChange.Description}");
                         writer.WriteLine();
                     }
                     writer.WriteLine();
