@@ -93,27 +93,40 @@
 
             return null;
         }
-
-        public static string GetObsoleteString(this ICustomAttributeProvider value)
+      
+        public static ObsoleteInfo GetObsoleteInfo(this ICustomAttributeProvider value)
         {
             var arguments = value.GetObsoleteAttribute().ConstructorArguments;
             var message = "";
             if (arguments.Count == 1)
             {
-                message = (string) arguments[0].Value;
+                message = (string)arguments[0].Value;
             }
             var treatAsError = false;
             if (arguments.Count == 2)
             {
-                message = (string) arguments[0].Value;
-                treatAsError = (bool) arguments[1].Value;
+                message = (string)arguments[0].Value;
+                treatAsError = (bool)arguments[1].Value;
             }
 
             if (!message.EndsWith("."))
             {
                 message += ".";
             }
-            if (treatAsError)
+
+            return new ObsoleteInfo
+            {
+                AsError = treatAsError,
+                Message = message
+            };
+        }
+
+        public static string GetObsoleteString(this ICustomAttributeProvider value)
+        {
+            var obsoleteInfo = value.GetObsoleteInfo();
+            var message = obsoleteInfo.Message;
+
+            if (obsoleteInfo.AsError)
             {
                 return message + " Obsoleted with error.";
             }

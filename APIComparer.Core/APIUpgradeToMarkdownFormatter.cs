@@ -21,16 +21,7 @@ namespace APIComparer
                 writer.WriteLine();
                 foreach (var type in apiChanges.RemovedTypes)
                 {
-                    writer.Write($"- `{type.Name}`");
-
-                    if (type.MadeInternal)
-                    {
-                        writer.WriteLine(" (Made internal)");
-                    }
-                    else
-                    {
-                        writer.WriteLine(" (Removed)");
-                    }
+                    writer.WriteLine($"- `{type.Name}`");
                 }
                 writer.WriteLine();
             }
@@ -47,7 +38,7 @@ namespace APIComparer
 
                     if (changedType.Obsoleted)
                     {
-                        writer.Write(" (Obsoleted)");
+                        writer.Write(" - Obsoleted");
                     }
 
                     writer.WriteLine();
