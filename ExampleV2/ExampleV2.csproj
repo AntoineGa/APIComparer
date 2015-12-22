@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="ClassObsoletedInBothVersions.cs" />
     <Compile Include="ClassToBeObsoletedWithErrorInNextVersion.cs" />
+    <Compile Include="ClassToBeObsoletedWithWarnInNextVersion.cs" />
     <Compile Include="ClassWithFieldToRemovedInNextMajor.cs" />
     <Compile Include="ClassWithMembersToBeObsoletedWithErrorInNextVersion.cs" />
     <Compile Include="ClassWithReadOnlyPropToBeRemovedInNextMajor.cs" />
