@@ -26,37 +26,48 @@ namespace APIComparer
                 writer.WriteLine();
             }
 
-            if (apiChanges.ChangedTypes.Any())
+            var breakingChanges = apiChanges.ChangedTypes.Where(ct => ct.IsBreaking).ToList();
+            if (breakingChanges.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## The following types have differences.");
+                writer.WriteLine("## Breaking changes");
                 writer.WriteLine();
-                foreach (var changedType in apiChanges.ChangedTypes)
+                foreach (var changedType in breakingChanges)
                 {
-                    writer.WriteLine();
-                    writer.Write("### {0}", HttpUtility.HtmlEncode(changedType.Name));
-
-                    if (changedType.Obsoleted)
-                    {
-                        writer.Write(" - Obsoleted");
-                    }
-
-                    writer.WriteLine();
-
-                    if (changedType.Obsoleted)
-                    {
-                        writer.WriteLine(changedType.ObsoleteDetails.Message);
-                    }
-
-                    foreach (var typeChange in changedType.TypeChanges)
-                    {
-                        writer.WriteLine();
-                        writer.WriteLine($"- `{typeChange.Name}` - {typeChange.Description}");
-                        writer.WriteLine();
-                    }
-                    writer.WriteLine();
+                    WriteChangedType(writer, changedType);
                 }
             }
+
+            var nonBreakinChanges = apiChanges.ChangedTypes.Where(ct => !ct.IsBreaking).ToList();
+            if (nonBreakinChanges.Any())
+            {
+                writer.WriteLine();
+                writer.WriteLine("## Non breaking changes");
+                writer.WriteLine();
+                foreach (var changedType in nonBreakinChanges)
+                {
+                    WriteChangedType(writer, changedType);
+                }
+            }
+        }
+
+        static void WriteChangedType(TextWriter writer, ChangedType changedType)
+        {
+            writer.WriteLine();
+            writer.WriteLine($"### {HttpUtility.HtmlEncode(changedType.Name)}");
+
+            if (changedType.Obsoleted)
+            {
+                writer.WriteLine($"Obsoleted: {changedType.ObsoleteDetails.Message}");
+            }
+
+            foreach (var typeChange in changedType.TypeChanges)
+            {
+                writer.WriteLine();
+                writer.WriteLine($"- `{typeChange.Name}` - {typeChange.Description}");
+                writer.WriteLine();
+            }
+            writer.WriteLine();
         }
     }
 }

@@ -8,12 +8,16 @@
         {
             TypeChanges = new List<TypeChange>();
 
-
             Name = typeDiff.LeftType.FullName;
 
             if (typeDiff.TypeObsoleted())
             {
                 ObsoleteDetails = typeDiff.RightType.GetObsoleteInfo();
+                IsBreaking = ObsoleteDetails.AsError;
+            }
+            else
+            {
+                IsBreaking = true;
             }
         }
 
