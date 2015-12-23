@@ -37,8 +37,6 @@
 
             public string Description { get; set; }
         }
-
-
     }
 
     public class ObsoleteInfo

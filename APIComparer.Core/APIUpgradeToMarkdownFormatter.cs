@@ -58,7 +58,9 @@ namespace APIComparer
 
             if (changedType.Obsoleted)
             {
-                writer.WriteLine($"Obsoleted: {changedType.ObsoleteDetails.Message}");
+                var obsoleteType = changedType.ObsoleteDetails.AsError ? "Error" : "Warning";
+
+                writer.WriteLine($"Obsoleted with {obsoleteType} - {changedType.ObsoleteDetails.Message}");
             }
 
             foreach (var typeChange in changedType.TypeChanges)
