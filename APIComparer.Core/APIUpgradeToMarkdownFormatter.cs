@@ -47,14 +47,14 @@ namespace APIComparer
                 }
             }
 
-            var nonBreakinChanges = apiChanges.ChangedTypes.Where(ct => !ct.IsBreaking).ToList();
-            if (nonBreakinChanges.Any())
+            var nonBreakingChanges = apiChanges.ChangedTypes.Where(ct => !ct.IsBreaking).ToList();
+            if (nonBreakingChanges.Any())
             {
                 writer.WriteLine();
                 writer.WriteLine("# Non breaking changes");
                 writer.WriteLine();
 
-                foreach (var changedType in nonBreakinChanges)
+                foreach (var changedType in nonBreakingChanges)
                 {
                     WriteChangedType(writer, changedType);
                 }

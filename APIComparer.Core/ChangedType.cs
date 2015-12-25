@@ -1,6 +1,7 @@
 ﻿namespace APIComparer
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     public class ChangedType
     {
@@ -13,13 +14,8 @@
             if (typeDiff.TypeObsoleted())
             {
                 ObsoleteDetails = typeDiff.RightType.GetObsoleteInfo();
-                IsBreaking = ObsoleteDetails.AsError;
             }
-            else
-            {
-                IsBreaking = true;
-            }
-
+        
             foreach (var removedMethod in typeDiff.PublicMethodsRemoved())
             {
                 TypeChanges.Add(new TypeChange
@@ -58,7 +54,24 @@
             }
         }
 
-        public bool IsBreaking { get; set; }
+        public bool IsBreaking
+        {
+            get
+            {
+                var obsoletedWithError = ObsoleteDetails?.AsError;
+                if (obsoletedWithError.HasValue && obsoletedWithError.Value)
+                {
+                    return true;
+                }
+
+                if (TypeChanges.Any())
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
 
         public bool Obsoleted => ObsoleteDetails != null;
         public ObsoleteInfo ObsoleteDetails { get; }
