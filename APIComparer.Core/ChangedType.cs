@@ -19,6 +19,43 @@
             {
                 IsBreaking = true;
             }
+
+            foreach (var removedMethod in typeDiff.PublicMethodsRemoved())
+            {
+                TypeChanges.Add(new TypeChange
+                {
+                    IsField = false,
+                    Name = removedMethod.GetName(),
+                    Description = "Method removed"
+                });
+            }
+            foreach (var matchingMember in typeDiff.MethodsChangedToNonPublic())
+            {
+                TypeChanges.Add(new TypeChange
+                {
+                    IsField = false,
+                    Name = matchingMember.Right.GetName(),
+                    Description = "Method no longer public"
+                });
+            }
+            foreach (var removedField in typeDiff.PublicFieldsRemoved())
+            {
+                TypeChanges.Add(new TypeChange
+                {
+                    IsField = true,
+                    Name = removedField.GetName(),
+                    Description = "Field removed"
+                });
+            }
+            foreach (var matchingMember in typeDiff.FieldsChangedToNonPublic())
+            {
+                TypeChanges.Add(new TypeChange
+                {
+                    IsField = true,
+                    Name = matchingMember.Right.GetName(),
+                    Description = "Field no longer public"
+                });
+            }
         }
 
         public bool IsBreaking { get; set; }
@@ -36,6 +73,8 @@
             public string Name { get; set; }
 
             public string Description { get; set; }
+
+            public bool IsMethod => !IsField;
         }
     }
 

@@ -14,6 +14,16 @@ namespace APIComparer
                 return;
             }
 
+            var breakingChanges = apiChanges.ChangedTypes.Where(ct => ct.IsBreaking).ToList();
+
+            if (breakingChanges.Any() || apiChanges.RemovedTypes.Any())
+            {
+                writer.WriteLine();
+                writer.WriteLine("# Breaking changes");
+                writer.WriteLine();
+
+            }
+
             if (apiChanges.RemovedTypes.Any())
             {
                 writer.WriteLine();
@@ -26,11 +36,10 @@ namespace APIComparer
                 writer.WriteLine();
             }
 
-            var breakingChanges = apiChanges.ChangedTypes.Where(ct => ct.IsBreaking).ToList();
             if (breakingChanges.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## Breaking changes");
+                writer.WriteLine("## The following types have breaking changes");
                 writer.WriteLine();
                 foreach (var changedType in breakingChanges)
                 {
@@ -42,7 +51,10 @@ namespace APIComparer
             if (nonBreakinChanges.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## Non breaking changes");
+                writer.WriteLine("# Non breaking changes");
+                writer.WriteLine();
+
+                writer.WriteLine("# The following types have non breaking changes");
                 writer.WriteLine();
                 foreach (var changedType in nonBreakinChanges)
                 {
@@ -53,7 +65,6 @@ namespace APIComparer
 
         static void WriteChangedType(TextWriter writer, ChangedType changedType)
         {
-            writer.WriteLine();
             writer.WriteLine($"### {HttpUtility.HtmlEncode(changedType.Name)}");
 
             if (changedType.Obsoleted)
@@ -63,13 +74,37 @@ namespace APIComparer
                 writer.WriteLine($"Obsoleted with {obsoleteType} - {changedType.ObsoleteDetails.Message}");
             }
 
-            foreach (var typeChange in changedType.TypeChanges)
+            var removedFields = changedType.TypeChanges.Where(tc => tc.IsField)
+                .ToList();
+
+            if (removedFields.Any())
             {
+                writer.WriteLine("#### Removed fields");
                 writer.WriteLine();
-                writer.WriteLine($"- `{typeChange.Name}` - {typeChange.Description}");
+
+                foreach (var typeChange in removedFields)
+                {
+                    writer.WriteLine($"- `{typeChange.Name}`");
+                }
+
                 writer.WriteLine();
             }
-            writer.WriteLine();
+
+            var removedMethods = changedType.TypeChanges.Where(tc => tc.IsMethod)
+              .ToList();
+
+            if (removedMethods.Any())
+            {
+                writer.WriteLine("#### Removed methods");
+                writer.WriteLine();
+
+                foreach (var typeChange in removedMethods)
+                {
+                    writer.WriteLine($"- `{typeChange.Name}`");
+                }
+
+                writer.WriteLine();
+            }
         }
     }
 }
