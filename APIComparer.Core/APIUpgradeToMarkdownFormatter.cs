@@ -54,8 +54,6 @@ namespace APIComparer
                 writer.WriteLine("# Non breaking changes");
                 writer.WriteLine();
 
-                writer.WriteLine("# The following types have non breaking changes");
-                writer.WriteLine();
                 foreach (var changedType in nonBreakinChanges)
                 {
                     WriteChangedType(writer, changedType);
