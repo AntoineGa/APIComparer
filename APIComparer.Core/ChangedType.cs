@@ -9,7 +9,7 @@
         {
             TypeChanges = new List<TypeChange>();
 
-            Name = typeDiff.LeftType.FullName;
+            Name = typeDiff.LeftType.GetName();
 
             if (typeDiff.TypeObsoleted())
             {
@@ -52,6 +52,17 @@
                     Description = "Field no longer public"
                 });
             }
+            foreach (var matchingMember in typeDiff.PublicFieldsObsoleted())
+            {
+                TypeChanges.Add(new TypeChange
+                {
+                    IsField = true,
+                    Name = matchingMember.Right.GetName(),
+                    Description = "Field has been obsoleted",
+                    ObsoleteDetails = matchingMember.Right.GetObsoleteInfo()
+                });
+            }
+           
         }
 
         public bool IsBreaking
@@ -64,7 +75,7 @@
                     return true;
                 }
 
-                if (TypeChanges.Any())
+                if (TypeChanges.Any(tc=>tc.IsBreaking))
                 {
                     return true;
                 }
@@ -88,6 +99,24 @@
             public string Description { get; set; }
 
             public bool IsMethod => !IsField;
+
+            public bool IsBreaking
+            {
+                get
+                {
+                    var obsoletedWithError = ObsoleteDetails?.AsError;
+                    if (obsoletedWithError.HasValue && !obsoletedWithError.Value)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            public bool Obsoleted => ObsoleteDetails != null;
+            public ObsoleteInfo ObsoleteDetails { get; set; }
+
         }
     }
 
