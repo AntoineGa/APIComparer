@@ -1,28 +1,36 @@
 ﻿namespace APIComparer
 {
     using System.Collections.Generic;
-    using System.Linq;
+    using Mono.Cecil;
 
-    public class ChangedType
+    public class ApiChange
     {
-        public ChangedType(TypeDiff typeDiff)
+        ApiChange()
         {
             TypeChanges = new List<TypeChange>();
+        }
 
+
+        public ApiChange(TypeDiff typeDiff):this()
+        {
+         
             Name = typeDiff.LeftType.GetName();
 
             if (typeDiff.TypeObsoleted())
             {
                 ObsoleteDetails = typeDiff.RightType.GetObsoleteInfo();
+                Reason = ApiChangeReason.Obsoleted;
+                return;
             }
-        
+
+            Reason = ApiChangeReason.FieldsOrMethodsRemoved;
+
             foreach (var removedMethod in typeDiff.PublicMethodsRemoved())
             {
                 TypeChanges.Add(new TypeChange
                 {
                     IsField = false,
                     Name = removedMethod.GetName(),
-                    Description = "Method removed"
                 });
             }
             foreach (var matchingMember in typeDiff.MethodsChangedToNonPublic())
@@ -31,7 +39,6 @@
                 {
                     IsField = false,
                     Name = matchingMember.Right.GetName(),
-                    Description = "Method no longer public"
                 });
             }
             foreach (var removedField in typeDiff.PublicFieldsRemoved())
@@ -40,7 +47,6 @@
                 {
                     IsField = true,
                     Name = removedField.GetName(),
-                    Description = "Field removed"
                 });
             }
             foreach (var matchingMember in typeDiff.FieldsChangedToNonPublic())
@@ -49,7 +55,6 @@
                 {
                     IsField = true,
                     Name = matchingMember.Right.GetName(),
-                    Description = "Field no longer public"
                 });
             }
             foreach (var matchingMember in typeDiff.PublicFieldsObsoleted())
@@ -58,65 +63,47 @@
                 {
                     IsField = true,
                     Name = matchingMember.Right.GetName(),
-                    Description = "Field has been obsoleted",
                     ObsoleteDetails = matchingMember.Right.GetObsoleteInfo()
                 });
             }
            
         }
 
-        public bool IsBreaking
+        public ApiChangeReason Reason { get; private set; }
+
+        public enum ApiChangeReason
         {
-            get
-            {
-                var obsoletedWithError = ObsoleteDetails?.AsError;
-                if (obsoletedWithError.HasValue && obsoletedWithError.Value)
-                {
-                    return true;
-                }
-
-                if (TypeChanges.Any(tc=>tc.IsBreaking))
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Removed = 0,
+            Obsoleted = 1,
+            FieldsOrMethodsRemoved = 2
         }
 
         public bool Obsoleted => ObsoleteDetails != null;
         public ObsoleteInfo ObsoleteDetails { get; }
 
         public List<TypeChange> TypeChanges { get; }
-        public string Name { get; }
+        public string Name { get; private set; }
 
         public class TypeChange
         {
             public bool IsField { get; set; }
 
             public string Name { get; set; }
-
-            public string Description { get; set; }
-
+            
             public bool IsMethod => !IsField;
-
-            public bool IsBreaking
-            {
-                get
-                {
-                    var obsoletedWithError = ObsoleteDetails?.AsError;
-                    if (obsoletedWithError.HasValue && !obsoletedWithError.Value)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }
-            }
 
             public bool Obsoleted => ObsoleteDetails != null;
             public ObsoleteInfo ObsoleteDetails { get; set; }
 
+        }
+
+        public static ApiChange FromRemovedType(TypeDefinition td)
+        {
+            return new ApiChange
+            {
+                Name = td.GetName(),
+                Reason = ApiChangeReason.Removed
+            };
         }
     }
 

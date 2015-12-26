@@ -14,9 +14,7 @@ namespace APIComparer
                 return;
             }
 
-            var breakingChanges = apiChanges.ChangedTypes.Where(ct => ct.IsBreaking).ToList();
-
-            if (breakingChanges.Any() || apiChanges.RemovedTypes.Any())
+            if (apiChanges.BreakingChanges.Any())
             {
                 writer.WriteLine();
                 writer.WriteLine("# Breaking changes");
@@ -24,55 +22,47 @@ namespace APIComparer
 
             }
 
-            if (apiChanges.RemovedTypes.Any())
+            if (apiChanges.BreakingChanges.Any())
             {
-                writer.WriteLine();
-                writer.WriteLine("## Types is no longer available");
-                writer.WriteLine();
-                foreach (var type in apiChanges.RemovedTypes)
+                foreach (var perReasonGroup in apiChanges.BreakingChanges.GroupBy(ac=>ac.Reason))
                 {
-                    writer.WriteLine($"- `{type.Name}`");
-                }
-                writer.WriteLine();
-            }
+                    writer.WriteLine();
+                    writer.WriteLine($"## {perReasonGroup.Key}");
+                    writer.WriteLine();
+                    foreach (var changedType in perReasonGroup)
+                    {
+                        WriteChangedType(writer, changedType);
+                    }
 
-            if (breakingChanges.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("## Changed types");
-                writer.WriteLine();
-                foreach (var changedType in breakingChanges)
-                {
-                    WriteChangedType(writer, changedType);
                 }
             }
 
-            var nonBreakingChanges = apiChanges.ChangedTypes.Where(ct => !ct.IsBreaking).ToList();
-            if (nonBreakingChanges.Any())
-            {
-                writer.WriteLine();
-                writer.WriteLine("# Non breaking changes");
-                writer.WriteLine();
+            //var nonBreakingChanges = apiChanges.BreakingChanges.Where(ct => !ct.IsBreaking).ToList();
+            //if (nonBreakingChanges.Any())
+            //{
+            //    writer.WriteLine();
+            //    writer.WriteLine("# Non breaking changes");
+            //    writer.WriteLine();
 
-                foreach (var changedType in nonBreakingChanges)
-                {
-                    WriteChangedType(writer, changedType);
-                }
-            }
+            //    foreach (var changedType in nonBreakingChanges)
+            //    {
+            //        WriteChangedType(writer, changedType);
+            //    }
+            //}
         }
 
-        static void WriteChangedType(TextWriter writer, ChangedType changedType)
+        static void WriteChangedType(TextWriter writer, ApiChange apiChange)
         {
-            writer.WriteLine($"### {HttpUtility.HtmlEncode(changedType.Name)}");
+            writer.WriteLine($"### {HttpUtility.HtmlEncode(apiChange.Name)}");
 
-            if (changedType.Obsoleted)
+            if (apiChange.Obsoleted)
             {
-                var obsoleteType = changedType.ObsoleteDetails.AsError ? "Error" : "Warning";
+                var obsoleteType = apiChange.ObsoleteDetails.AsError ? "Error" : "Warning";
 
-                writer.WriteLine($"Obsoleted with {obsoleteType} - {changedType.ObsoleteDetails.Message}");
+                writer.WriteLine($"Obsoleted with {obsoleteType} - {apiChange.ObsoleteDetails.Message}");
             }
 
-            var removedFields = changedType.TypeChanges.Where(tc => tc.IsField)
+            var removedFields = apiChange.TypeChanges.Where(tc => tc.IsField)
                 .ToList();
 
             if (removedFields.Any())
@@ -88,7 +78,7 @@ namespace APIComparer
                 writer.WriteLine();
             }
 
-            var removedMethods = changedType.TypeChanges.Where(tc => tc.IsMethod)
+            var removedMethods = apiChange.TypeChanges.Where(tc => tc.IsMethod)
               .ToList();
 
             if (removedMethods.Any())

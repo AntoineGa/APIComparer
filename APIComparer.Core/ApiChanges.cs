@@ -5,30 +5,22 @@ namespace APIComparer
 
     public class ApiChanges
     {
+        public bool NoLongerSupported { get; }
+        public List<ApiChange> BreakingChanges { get; }
+      
         public ApiChanges(Diff diff)
         {
-            RemovedTypes = new List<RemovedType>();
-            ChangedTypes = new List<ChangedType>();
+            BreakingChanges = new List<ApiChange>();
 
             if (diff is EmptyDiff)
             {
                 NoLongerSupported = true;
                 return;
             }
+           
+            BreakingChanges.AddRange(diff.RemovedPublicTypes().Select(ApiChange.FromRemovedType));
+            BreakingChanges.AddRange(diff.TypesChangedToNonPublic().Select(td=>ApiChange.FromRemovedType(td.LeftType)));
 
-            RemovedTypes.AddRange(diff.RemovedPublicTypes()
-                .Select(r => new RemovedType
-                {
-                    Name = r.FullName,
-                    MadeInternal = false
-                }));
-
-            RemovedTypes.AddRange(diff.TypesChangedToNonPublic()
-                .Select(r => new RemovedType
-                {
-                    Name = r.LeftType.FullName,
-                    MadeInternal = true
-                }));
 
             foreach (var typeDiff in diff.MatchingTypeDiffs)
             {
@@ -45,14 +37,8 @@ namespace APIComparer
                 {
                     continue;
                 }
-                ChangedTypes.Add(new ChangedType(typeDiff));
+                BreakingChanges.Add(new ApiChange(typeDiff));
             }
         }
-
-        public bool NoLongerSupported { get; }
-
-        public List<RemovedType> RemovedTypes { get; }
-
-        public List<ChangedType> ChangedTypes { get; }
     }
 }
