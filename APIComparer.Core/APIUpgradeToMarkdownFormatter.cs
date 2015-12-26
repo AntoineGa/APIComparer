@@ -27,7 +27,7 @@ namespace APIComparer
             if (apiChanges.RemovedTypes.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## The following public types is no longer available");
+                writer.WriteLine("## Types is no longer available");
                 writer.WriteLine();
                 foreach (var type in apiChanges.RemovedTypes)
                 {
@@ -39,7 +39,7 @@ namespace APIComparer
             if (breakingChanges.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## The following types have breaking changes");
+                writer.WriteLine("## Changed types");
                 writer.WriteLine();
                 foreach (var changedType in breakingChanges)
                 {
