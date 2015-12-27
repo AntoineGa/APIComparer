@@ -2,7 +2,6 @@ namespace APIComparer
 {
     using System.IO;
     using System.Linq;
-    using System.Web;
 
     public class APIUpgradeToMarkdownFormatter
     {
@@ -14,55 +13,44 @@ namespace APIComparer
                 return;
             }
 
-            if (apiChanges.BreakingChanges.Any())
+            if (apiChanges.RemovedTypes.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("# Breaking changes");
-                writer.WriteLine();
+                writer.WriteLine("## The following types are no longer available");
 
-            }
-
-            if (apiChanges.BreakingChanges.Any())
-            {
-                foreach (var perReasonGroup in apiChanges.BreakingChanges.GroupBy(ac=>ac.Reason))
+                foreach (var removedType in apiChanges.RemovedTypes)
                 {
-                    writer.WriteLine();
-                    writer.WriteLine($"## {perReasonGroup.Key}");
-                    writer.WriteLine();
-                    foreach (var changedType in perReasonGroup)
-                    {
-                        WriteChangedType(writer, changedType);
-                    }
-
+                    WriteRemovedType(writer, removedType);
                 }
             }
 
-            //var nonBreakingChanges = apiChanges.BreakingChanges.Where(ct => !ct.IsBreaking).ToList();
-            //if (nonBreakingChanges.Any())
-            //{
-            //    writer.WriteLine();
-            //    writer.WriteLine("# Non breaking changes");
-            //    writer.WriteLine();
+            if (apiChanges.ChangedTypes.Any())
+            {
+                writer.WriteLine();
+                writer.WriteLine("## Types with removed members");
+                writer.WriteLine();
 
-            //    foreach (var changedType in nonBreakingChanges)
-            //    {
-            //        WriteChangedType(writer, changedType);
-            //    }
-            //}
+                foreach (var changedType in apiChanges.ChangedTypes)
+                {
+                    WriteChangedType(writer, changedType);
+                }
+            }
         }
 
-        static void WriteChangedType(TextWriter writer, ApiChange apiChange)
+        static void WriteRemovedType(TextWriter writer, RemovedType removedType)
         {
-            writer.WriteLine($"### {HttpUtility.HtmlEncode(apiChange.Name)}");
+            writer.WriteLine($"### {removedType.Name}");
 
-            if (apiChange.Obsoleted)
-            {
-                var obsoleteType = apiChange.ObsoleteDetails.AsError ? "Error" : "Warning";
+            var upgradeInstructions = removedType.UpgradeInstructions ?? "No upgrade instructions provided.";
 
-                writer.WriteLine($"Obsoleted with {obsoleteType} - {apiChange.ObsoleteDetails.Message}");
-            }
+            writer.WriteLine(upgradeInstructions);
+        }
 
-            var removedFields = apiChange.TypeChanges.Where(tc => tc.IsField)
+        static void WriteChangedType(TextWriter writer, ChangedType changedType)
+        {
+            writer.WriteLine($"### {changedType.Name}");
+
+            var removedFields = changedType.RemovedMembers.Where(tc => tc.IsField)
                 .ToList();
 
             if (removedFields.Any())
@@ -78,7 +66,7 @@ namespace APIComparer
                 writer.WriteLine();
             }
 
-            var removedMethods = apiChange.TypeChanges.Where(tc => tc.IsMethod)
+            var removedMethods = changedType.RemovedMembers.Where(tc => tc.IsMethod)
               .ToList();
 
             if (removedMethods.Any())
