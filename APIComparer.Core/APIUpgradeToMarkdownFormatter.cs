@@ -45,12 +45,12 @@ namespace APIComparer
             if (removedTypesInFutureVersions.Any())
             {
                 writer.WriteLine();
-                writer.WriteLine("## The following will be removed in upcoming versions");
+                writer.WriteLine("## The following typed will be removed in upcoming versions");
               
                 foreach (var versionGroup in removedTypesInFutureVersions)
                 {
                     writer.WriteLine();
-                    writer.WriteLine($"### {versionGroup.Key}");
+                    writer.WriteLine($"### Version - {versionGroup.Key}");
                     writer.WriteLine();
 
                     foreach (var removedType in versionGroup)
