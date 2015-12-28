@@ -47,6 +47,7 @@
     <Compile Include="ClassToBeObsoletedWithWarnInNextVersion.cs" />
     <Compile Include="ClassWithFieldToRemovedInNextMajor.cs" />
     <Compile Include="ClassWithMembersToBeObsoletedWithErrorInNextVersion.cs" />
+    <Compile Include="ClassWithMembersToBeObsoletedWithWarnInNextVersion.cs" />
     <Compile Include="ClassWithReadOnlyPropToBeRemovedInNextMajor.cs" />
     <Compile Include="IMethodChangesParametersNextVersion.cs" />
     <Compile Include="InternalNextVersionClass.cs" />
