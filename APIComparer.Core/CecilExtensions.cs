@@ -114,17 +114,13 @@
                 message += ".";
             }
 
-            return new ObsoleteInfo
-            {
-                AsError = treatAsError,
-                Message = message
-            };
+            return new ObsoleteInfo(treatAsError, message);
         }
 
         public static string GetObsoleteString(this ICustomAttributeProvider value)
         {
             var obsoleteInfo = value.GetObsoleteInfo();
-            var message = obsoleteInfo.Message;
+            var message = obsoleteInfo.RawMessage;
 
             if (obsoleteInfo.AsError)
             {

@@ -4,6 +4,9 @@
 
     public class ChangedType
     {
+        public List<RemovedMember> RemovedMembers { get; }
+        public string Name { get; private set; }
+
         public ChangedType(TypeDiff typeDiff)
         {
             Name = typeDiff.LeftType.GetName();
@@ -27,10 +30,13 @@
             }
             foreach (var matchingMember in typeDiff.PublicMethodsObsoleted())
             {
+                var obsoleteInfo = matchingMember.Right.GetObsoleteInfo();
+
                 RemovedMembers.Add(new RemovedMember
                 {
                     IsField = false,
                     Name = matchingMember.Right.GetName(),
+                    UpgradeInstructions = obsoleteInfo.Message
                 });
             }
 
@@ -52,20 +58,22 @@
             }
             foreach (var matchingMember in typeDiff.PublicFieldsObsoleted())
             {
+                var obsoleteInfo = matchingMember.Right.GetObsoleteInfo();
+
                 RemovedMembers.Add(new RemovedMember
                 {
                     IsField = true,
                     Name = matchingMember.Right.GetName(),
+                    UpgradeInstructions = obsoleteInfo.Message
                 });
             }
            
         }
-        
-        public List<RemovedMember> RemovedMembers { get; }
-        public string Name { get; private set; }
-
+      
         public class RemovedMember
         {
+            public string UpgradeInstructions { get; set; }
+
             public bool IsField { get; set; }
 
             public string Name { get; set; }

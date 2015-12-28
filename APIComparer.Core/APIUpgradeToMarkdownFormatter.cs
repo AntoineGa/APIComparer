@@ -60,7 +60,7 @@ namespace APIComparer
 
                 foreach (var typeChange in removedFields)
                 {
-                    writer.WriteLine($"- `{typeChange.Name}`");
+                    WriteRemovedMember(writer, typeChange);
                 }
 
                 writer.WriteLine();
@@ -76,11 +76,17 @@ namespace APIComparer
 
                 foreach (var typeChange in removedMethods)
                 {
-                    writer.WriteLine($"- `{typeChange.Name}`");
+                    WriteRemovedMember(writer, typeChange);
                 }
 
                 writer.WriteLine();
             }
+        }
+
+        static void WriteRemovedMember(TextWriter writer, ChangedType.RemovedMember removedMember)
+        {
+            var upgradeInstructions = removedMember.UpgradeInstructions ?? "No upgrade instructions provided.";
+            writer.WriteLine($"* `{removedMember.Name}` - {upgradeInstructions}");
         }
     }
 }
