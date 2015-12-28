@@ -12,9 +12,17 @@
             {
                 var obsoleteInfo = typeDefinition.GetObsoleteInfo();
                 UpgradeInstructions = obsoleteInfo.Message;
+                Version = obsoleteInfo.TargetVersion;
+            }
+            else
+            {
+                Version = "Current";
             }
         }
         public string Name { get; }
         public string UpgradeInstructions { get; }
+
+        public string Version { get; }
+
     }
 }

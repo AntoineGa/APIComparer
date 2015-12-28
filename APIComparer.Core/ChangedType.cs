@@ -36,7 +36,8 @@
                 {
                     IsField = false,
                     Name = matchingMember.Right.GetName(),
-                    UpgradeInstructions = obsoleteInfo.Message
+                    UpgradeInstructions = obsoleteInfo.Message,
+                    TargetVersion = obsoleteInfo.TargetVersion
                 });
             }
 
@@ -64,7 +65,8 @@
                 {
                     IsField = true,
                     Name = matchingMember.Right.GetName(),
-                    UpgradeInstructions = obsoleteInfo.Message
+                    UpgradeInstructions = obsoleteInfo.Message,
+                    TargetVersion = obsoleteInfo.TargetVersion
                 });
             }
            
@@ -72,6 +74,10 @@
       
         public class RemovedMember
         {
+            public RemovedMember()
+            {
+                TargetVersion = "Current";
+            }
             public string UpgradeInstructions { get; set; }
 
             public bool IsField { get; set; }
@@ -79,6 +85,8 @@
             public string Name { get; set; }
             
             public bool IsMethod => !IsField;
+
+            public string TargetVersion { get; set; }
         }
     }
 }

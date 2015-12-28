@@ -13,14 +13,16 @@ namespace APIComparer
                 return;
             }
 
-            if (apiChanges.RemovedTypes.Any())
+            var removedTypesInCurrentVersion = apiChanges.RemovedTypes.Where(rt => rt.Version == "Current").ToList();
+            if (removedTypesInCurrentVersion.Any())
             {
                 writer.WriteLine();
                 writer.WriteLine("## The following types are no longer available");
+                writer.WriteLine();
 
-                foreach (var removedType in apiChanges.RemovedTypes)
+                foreach (var removedType in removedTypesInCurrentVersion)
                 {
-                    WriteRemovedType(writer, removedType);
+                    WriteRemovedType(writer, removedType, 3);
                 }
             }
 
@@ -35,15 +37,39 @@ namespace APIComparer
                     WriteChangedType(writer, changedType);
                 }
             }
+
+            var removedTypesInFutureVersions = apiChanges.RemovedTypes
+                .Where(rt => rt.Version != "Current")
+                .GroupBy(rt => rt.Version).ToList();
+
+            if (removedTypesInFutureVersions.Any())
+            {
+                writer.WriteLine();
+                writer.WriteLine("## The following will be removed in upcoming versions");
+              
+                foreach (var versionGroup in removedTypesInFutureVersions)
+                {
+                    writer.WriteLine();
+                    writer.WriteLine($"### {versionGroup.Key}");
+                    writer.WriteLine();
+
+                    foreach (var removedType in versionGroup)
+                    {
+                        WriteRemovedType(writer, removedType, 4);
+                    }
+                }
+            }
+
         }
 
-        static void WriteRemovedType(TextWriter writer, RemovedType removedType)
+        static void WriteRemovedType(TextWriter writer, RemovedType removedType, int headingSize)
         {
-            writer.WriteLine($"### {removedType.Name}");
+            writer.WriteLine($"{new string('#', headingSize)} {removedType.Name}");
 
             var upgradeInstructions = removedType.UpgradeInstructions ?? "No upgrade instructions provided.";
 
             writer.WriteLine(upgradeInstructions);
+            writer.WriteLine();
         }
 
         static void WriteChangedType(TextWriter writer, ChangedType changedType)
