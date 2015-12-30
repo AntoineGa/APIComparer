@@ -15,6 +15,15 @@
             return value.GetObsoleteAttribute() != null;
         }
 
+        public static bool IsObsoleteWithError(this ICustomAttributeProvider value)
+        {
+            if (!value.HasObsoleteAttribute())
+            {
+                return false;
+            }
+            return value.GetObsoleteInfo().AsError;
+        }
+
         public static bool IsCompilerGenerated(this ICustomAttributeProvider definition)
         {
             var fullName = typeof(CompilerGeneratedAttribute).FullName;

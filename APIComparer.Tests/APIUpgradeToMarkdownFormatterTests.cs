@@ -42,7 +42,7 @@ public class APIUpgradeToMarkdownFormatterTests
 
         var stringBuilder = new StringWriter();
         var formatter = new APIUpgradeToMarkdownFormatter();
-        formatter.WriteOut(new ApiChanges(diff), stringBuilder, new FormattingInfo(string.Empty, string.Empty));
+        formatter.WriteOut(ApiChanges.FromDiff(diff), stringBuilder, new FormattingInfo(string.Empty, string.Empty));
 
         Approvals.Verify(stringBuilder.ToString());
     }
@@ -56,7 +56,7 @@ public class APIUpgradeToMarkdownFormatterTests
         var stringBuilder = new StringWriter();
         var formatter = new APIUpgradeToMarkdownFormatter();
 
-        formatter.WriteOut(new ApiChanges(diff), stringBuilder, new FormattingInfo(string.Empty, string.Empty));
+        formatter.WriteOut(ApiChanges.FromDiff(diff), stringBuilder, new FormattingInfo(string.Empty, string.Empty));
 
         Approvals.Verify(stringBuilder.ToString());
     }

@@ -5,48 +5,54 @@ namespace APIComparer
 
     public class ApiChanges
     {
+        public static ApiChanges FromDiff(Diff diff)
+        {
+            var removedTypes = diff.LeftOrphanTypes
+                .Where(t => t.IsPublic &&
+                            !t.IsObsoleteWithError())
+                .Select(td => new RemovedType(td))
+                .ToList();
+
+            var typesChangedToNonPublic = diff.MatchingTypeDiffs
+                .Where(td => td.LeftType.IsPublic &&
+                            !td.RightType.IsPublic &&
+                            !td.LeftType.IsObsoleteWithError())
+                .Select(td => new RemovedType(td.RightType, td.LeftType.HasObsoleteAttribute() ? td.LeftType.GetObsoleteInfo() : null));
+
+            var obsoletedTypes = diff.MatchingTypeDiffs
+                .Where(td => td.LeftType.IsPublic &&
+                             td.RightType.IsPublic &&
+                             !td.LeftType.HasObsoleteAttribute() &&
+                             td.RightType.HasObsoleteAttribute())
+                .Select(td => new RemovedType(td.RightType, td.RightType.GetObsoleteInfo()));
+
+            removedTypes.AddRange(typesChangedToNonPublic);
+            removedTypes.AddRange(obsoletedTypes);
+            return new ApiChanges(removedTypes, new List<TypeDiff>());
+        }
         public bool NoLongerSupported { get; }
         public List<RemovedType> RemovedTypes { get; }
         public List<ChangedType> ChangedTypes { get; }
 
-        public ApiChanges(Diff diff)
+        public ApiChanges(List<RemovedType> removedTypes, List<TypeDiff> typeDiffs)
         {
-            RemovedTypes = new List<RemovedType>();
+            RemovedTypes = removedTypes;
             ChangedTypes = new List<ChangedType>();
 
-            if (diff is EmptyDiff)
-            {
-                NoLongerSupported = true;
-                return;
-            }
-           
-            RemovedTypes.AddRange(diff.RemovedPublicTypes().Select(td=>new RemovedType(td)));
-            RemovedTypes.AddRange(diff.TypesChangedToNonPublic().Select(td=>new RemovedType(td.LeftType)));
-         
+            //if (diff is EmptyDiff)
+            //{
+            //    NoLongerSupported = true;
+            //    return;
+            //}
 
-            foreach (var typeDiff in diff.MatchingTypeDiffs)
+            foreach (var typeDiff in typeDiffs)
             {
-                if (!typeDiff.LeftType.IsPublic)
-                {
-                    continue;
-                }
-
-                if (!typeDiff.RightType.IsPublic)
-                {
-                    continue;
-                }
                 if (!typeDiff.HasDifferences())
                 {
                     continue;
                 }
-                if (typeDiff.TypeObsoleted())
-                {
-                    RemovedTypes.Add(new RemovedType(typeDiff.RightType));
-                }
-                else
-                {
-                    ChangedTypes.Add(new ChangedType(typeDiff));
-                }
+
+                ChangedTypes.Add(new ChangedType(typeDiff));
             }
         }
     }

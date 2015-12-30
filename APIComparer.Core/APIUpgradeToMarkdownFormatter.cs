@@ -13,14 +13,13 @@ namespace APIComparer
                 return;
             }
 
-            var removedTypesInCurrentVersion = apiChanges.RemovedTypes.Where(rt => rt.Version == "Current").ToList();
-            if (removedTypesInCurrentVersion.Any())
+            if (apiChanges.RemovedTypes.Any())
             {
                 writer.WriteLine();
                 writer.WriteLine("## The following types are no longer available");
                 writer.WriteLine();
 
-                foreach (var removedType in removedTypesInCurrentVersion)
+                foreach (var removedType in apiChanges.RemovedTypes)
                 {
                     WriteRemovedType(writer, removedType, 3);
                 }
@@ -35,54 +34,6 @@ namespace APIComparer
                 foreach (var changedType in apiChanges.ChangedTypes)
                 {
                     WriteChangedType(writer, changedType, 3);
-                }
-            }
-
-            var removedTypesInFutureVersions = apiChanges.RemovedTypes
-                .Where(rt => rt.Version != "Current")
-                .GroupBy(rt => rt.Version).ToList();
-
-            var changedTypesInFutureVersions = apiChanges.ChangedTypes
-                .Where(ct => ct.RemovedMembers.All(rm => rm.TargetVersion != "Current"))
-                .GroupBy(rt => rt.RemovedMembers.First().TargetVersion).ToList();
-
-            if (removedTypesInFutureVersions.Any() || changedTypesInFutureVersions.Any())
-            {
-                var allVersions = removedTypesInFutureVersions.Select(g => g.Key)
-                    .ToList();
-
-                allVersions.AddRange(changedTypesInFutureVersions.Select(g => g.Key));
-
-                foreach (var version in allVersions.Distinct())
-                {
-                    writer.WriteLine();
-                    writer.WriteLine($"## Upcoming changes in - {version}");
-                    writer.WriteLine();
-
-                    var removals = removedTypesInFutureVersions.SingleOrDefault(g => g.Key == version);
-
-                    if (removals != null)
-                    {
-                        writer.WriteLine("### The following types will no longer available");
-                        writer.WriteLine();
-                        foreach (var removedType in removals)
-                        {
-                            WriteRemovedType(writer, removedType, 4);
-                        }
-                    }
-
-                    var changes = changedTypesInFutureVersions.SingleOrDefault(g => g.Key == version);
-
-                    if (changes != null)
-                    {
-                        writer.WriteLine("### The following types will be changed");
-                        writer.WriteLine();
-                        foreach (var changedType in changes)
-                        {
-                            WriteChangedType(writer, changedType, 4);
-                        }
-
-                    }
                 }
             }
 
