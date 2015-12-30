@@ -3,7 +3,7 @@ namespace Example
     using System;
 
     [Obsolete("Some message", false)]
-    public class ClassObsoletedWithWarnShouldBeIncluded
+    public class ClassObsoletedWithWarnShouldBeIncludedIfInternalized
     {
     }
 }

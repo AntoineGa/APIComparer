@@ -43,7 +43,8 @@
   <ItemGroup>
     <Compile Include="ClassObsoletedInBothVersions.cs" />
     <Compile Include="ClassObsoletedWithErrorShouldNotBeIncludedIfRemoved.cs" />
-    <Compile Include="ClassObsoletedWithWarnShouldBeIncluded.cs" />
+    <Compile Include="ClassObsoletedWithErrorShouldNotBeIncludedIfStillObsolete.cs" />
+    <Compile Include="ClassObsoletedWithWarnShouldBeIncludedIfInternalized.cs" />
     <Compile Include="ClassObsoletedWithWarnShouldBeIncludedIfRemoved.cs" />
     <Compile Include="ClassToBeObsoletedWithErrorInNextVersion.cs" />
     <Compile Include="ClassToBeObsoletedWithWarnInNextVersion.cs" />
@@ -58,7 +59,7 @@
     <Compile Include="MemberObsoleteNextVersion.cs" />
     <Compile Include="MissingNextVersionClass.cs" />
     <Compile Include="MissingNextVersionClassWithRemoveInNextMajor.cs" />
-    <Compile Include="ClassObsoletedWithErrorShouldNotBeIncluded.cs" />
+    <Compile Include="ClassObsoletedWithErrorShouldNotBeIncludedIfInternalized.cs" />
     <Compile Include="PublicClass.cs" />
   </ItemGroup>
   <ItemGroup>

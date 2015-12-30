@@ -17,17 +17,32 @@ namespace APIComparer
                 .Where(td => td.LeftType.IsPublic &&
                             !td.RightType.IsPublic &&
                             !td.LeftType.IsObsoleteWithError())
-                .Select(td => new RemovedType(td.RightType, td.LeftType.HasObsoleteAttribute() ? td.LeftType.GetObsoleteInfo() : null));
+                .Select(td => new RemovedType(td.RightType, td.LeftType.HasObsoleteAttribute() ? td.LeftType.GetObsoleteInfo() : null))
+                .ToList();
 
             var obsoletedTypes = diff.MatchingTypeDiffs
                 .Where(td => td.LeftType.IsPublic &&
                              td.RightType.IsPublic &&
-                             !td.LeftType.HasObsoleteAttribute() &&
+                             !td.LeftType.IsObsoleteWithError() &&
                              td.RightType.HasObsoleteAttribute())
-                .Select(td => new RemovedType(td.RightType, td.RightType.GetObsoleteInfo()));
+                //.Select(td => new RemovedType(td.RightType, td.RightType.GetObsoleteInfo()))
+                .Select(td => td.RightType)
+                .ToList();
+
+
+            var currentObsoletes = obsoletedTypes
+                .Where(o => o.IsObsoleteWithError())
+                .Select(td => new RemovedType(td, td.GetObsoleteInfo()))
+                .ToList();
+
+            var futureObsoletes = obsoletedTypes
+                .Where(o => !o.IsObsoleteWithError())
+                .Select(td => new RemovedType(td, td.GetObsoleteInfo()))
+                .ToList();
 
             removedTypes.AddRange(typesChangedToNonPublic);
-            removedTypes.AddRange(obsoletedTypes);
+            removedTypes.AddRange(currentObsoletes);
+
             return new ApiChanges(removedTypes, new List<TypeDiff>());
         }
         public bool NoLongerSupported { get; }
