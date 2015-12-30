@@ -5,7 +5,7 @@ namespace APIComparer
 
     public class ApiChanges
     {
-        public static ApiChanges FromDiff(Diff diff)
+        public static List<ApiChanges> FromDiff(Diff diff)
         {
             var removedTypes = diff.LeftOrphanTypes
                 .Where(t => t.IsPublic &&
@@ -25,7 +25,6 @@ namespace APIComparer
                              td.RightType.IsPublic &&
                              !td.LeftType.IsObsoleteWithError() &&
                              td.RightType.HasObsoleteAttribute())
-                //.Select(td => new RemovedType(td.RightType, td.RightType.GetObsoleteInfo()))
                 .Select(td => td.RightType)
                 .ToList();
 
@@ -43,14 +42,20 @@ namespace APIComparer
             removedTypes.AddRange(typesChangedToNonPublic);
             removedTypes.AddRange(currentObsoletes);
 
-            return new ApiChanges(removedTypes, new List<TypeDiff>());
+            var result = new List<ApiChanges>();
+            result.Add(new ApiChanges("Current", removedTypes, new List<TypeDiff>()));
+
+            return result;
         }
+
+        public string Version { get; }
         public bool NoLongerSupported { get; }
         public List<RemovedType> RemovedTypes { get; }
         public List<ChangedType> ChangedTypes { get; }
 
-        public ApiChanges(List<RemovedType> removedTypes, List<TypeDiff> typeDiffs)
+        public ApiChanges(string version, List<RemovedType> removedTypes, List<TypeDiff> typeDiffs)
         {
+            Version = version;
             RemovedTypes = removedTypes;
             ChangedTypes = new List<ChangedType>();
 

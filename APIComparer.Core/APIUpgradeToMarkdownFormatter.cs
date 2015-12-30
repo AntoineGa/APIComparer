@@ -1,11 +1,33 @@
 namespace APIComparer
 {
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
 
     public class APIUpgradeToMarkdownFormatter
     {
-        public void WriteOut(ApiChanges apiChanges, TextWriter writer, FormattingInfo info)
+        public void WriteOut(List<ApiChanges> apiChanges, TextWriter writer)
+        {
+            var currentChanges = apiChanges.Single(c => c.Version == "Current");
+            var upcomingChanges = apiChanges.Where(c => c.Version != "Current").ToList();
+            if (upcomingChanges.Any())
+            {
+                writer.WriteLine("# Changes in current version");
+                writer.WriteLine();
+            }
+
+            WriteOut(currentChanges, writer);
+
+            foreach (var change in upcomingChanges)
+            {
+                writer.WriteLine($"# Upcoming changes in Version {change.Version}");
+                writer.WriteLine();
+
+                WriteOut(change, writer);
+            }
+        }
+
+        void WriteOut(ApiChanges apiChanges, TextWriter writer)
         {
             if (apiChanges.NoLongerSupported)
             {
