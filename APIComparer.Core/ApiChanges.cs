@@ -7,6 +7,11 @@ namespace APIComparer
     {
         public static List<ApiChanges> FromDiff(Diff diff)
         {
+            //if (diff is EmptyDiff)
+            //{
+            //    return new List<ApiChanges>(new ApiChanges());
+            //}
+
             var removedTypes = diff.LeftOrphanTypes
                 .Where(t => t.IsPublic &&
                             !t.IsObsoleteWithError())
@@ -20,22 +25,31 @@ namespace APIComparer
                 .Select(td => new RemovedType(td.RightType, td.LeftType.HasObsoleteAttribute() ? td.LeftType.GetObsoleteInfo() : null))
                 .ToList();
 
-            var obsoletedTypes = diff.MatchingTypeDiffs
+            var publicTypeDiffs = diff.MatchingTypeDiffs
                 .Where(td => td.LeftType.IsPublic &&
-                             td.RightType.IsPublic &&
-                             !td.LeftType.IsObsoleteWithError() &&
+                             td.RightType.IsPublic)
+                .ToList();
+
+            var obsoletedTypes = publicTypeDiffs
+                .Where(td => !td.LeftType.IsObsoleteWithError() &&
                              td.RightType.HasObsoleteAttribute())
                 .Select(td => td.RightType)
                 .ToList();
 
+            var typesWithDiffs = publicTypeDiffs
+              .Where(td => !td.LeftType.IsObsoleteWithError() &&
+                            !td.RightType.HasObsoleteAttribute() &&
+                            td.HasDifferences())
+              .ToList();
+
+            //var currentDiffs = publicTypeDiffs
+            //  .Where(td => !td.PublicMethodsRemoved())
+            //  .ToList();
+
+
 
             var currentObsoletes = obsoletedTypes
                 .Where(o => o.IsObsoleteWithError())
-                .Select(td => new RemovedType(td, td.GetObsoleteInfo()))
-                .ToList();
-
-            var futureObsoletes = obsoletedTypes
-                .Where(o => !o.IsObsoleteWithError())
                 .Select(td => new RemovedType(td, td.GetObsoleteInfo()))
                 .ToList();
 
@@ -45,6 +59,20 @@ namespace APIComparer
             var result = new List<ApiChanges>();
             result.Add(new ApiChanges("Current", removedTypes, new List<TypeDiff>()));
 
+            var futureObsoletes = obsoletedTypes
+                .Where(o => !o.IsObsoleteWithError())
+                .Select(td =>new
+                {
+                    Version = td.GetObsoleteInfo().TargetVersion,
+                    RemovedType = new RemovedType(td, td.GetObsoleteInfo())
+                })
+                .GroupBy(rt=>rt.Version);
+
+            foreach (var futureObsolete in futureObsoletes)
+            {
+                result.Add(new ApiChanges(futureObsolete.Key, futureObsolete.Select(fo=>fo.RemovedType).ToList(), new List<TypeDiff>()));
+            }
+
             return result;
         }
 
@@ -53,17 +81,11 @@ namespace APIComparer
         public List<RemovedType> RemovedTypes { get; }
         public List<ChangedType> ChangedTypes { get; }
 
-        public ApiChanges(string version, List<RemovedType> removedTypes, List<TypeDiff> typeDiffs)
+        ApiChanges(string version, List<RemovedType> removedTypes, List<TypeDiff> typeDiffs)
         {
             Version = version;
             RemovedTypes = removedTypes;
             ChangedTypes = new List<ChangedType>();
-
-            //if (diff is EmptyDiff)
-            //{
-            //    NoLongerSupported = true;
-            //    return;
-            //}
 
             foreach (var typeDiff in typeDiffs)
             {

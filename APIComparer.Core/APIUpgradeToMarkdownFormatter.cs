@@ -20,7 +20,7 @@ namespace APIComparer
 
             foreach (var change in upcomingChanges)
             {
-                writer.WriteLine($"# Upcoming changes in Version {change.Version}");
+                writer.WriteLine($"# Upcoming changes in Version - {change.Version}");
                 writer.WriteLine();
 
                 WriteOut(change, writer);
@@ -37,7 +37,6 @@ namespace APIComparer
 
             if (apiChanges.RemovedTypes.Any())
             {
-                writer.WriteLine();
                 writer.WriteLine("## The following types are no longer available");
                 writer.WriteLine();
 
@@ -49,7 +48,6 @@ namespace APIComparer
 
             if (apiChanges.ChangedTypes.Any())
             {
-                writer.WriteLine();
                 writer.WriteLine("## Types with removed members");
                 writer.WriteLine();
 
