@@ -57,7 +57,7 @@ namespace APIComparer
             removedTypes.AddRange(currentObsoletes);
 
             var result = new List<ApiChanges>();
-            result.Add(new ApiChanges("Current", removedTypes, new List<TypeDiff>()));
+            result.Add(new ApiChanges("Current", removedTypes, typesWithDiffs));
 
             var futureObsoletes = obsoletedTypes
                 .Where(o => !o.IsObsoleteWithError())
