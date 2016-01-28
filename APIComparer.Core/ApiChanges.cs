@@ -10,12 +10,21 @@ namespace APIComparer
         public List<RemovedType> RemovedTypes { get; }
         public List<ChangedType> ChangedTypes { get; }
 
+        ApiChanges()
+        {
+            NoLongerSupported = true;
+            Version = "Current";
+        }
+       
         public static List<ApiChanges> FromDiff(Diff diff)
         {
-            //if (diff is EmptyDiff)
-            //{
-            //    return new List<ApiChanges>(new ApiChanges());
-            //}
+            if (diff is EmptyDiff)
+            {
+                return new List<ApiChanges>
+                {
+                    new ApiChanges()
+                };
+            }
 
             var removedTypes = diff.LeftOrphanTypes
                 .Where(t => t.IsPublic &&
