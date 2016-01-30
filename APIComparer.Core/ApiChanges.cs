@@ -15,7 +15,7 @@ namespace APIComparer
             NoLongerSupported = true;
             Version = "Current";
         }
-       
+
         public static List<ApiChanges> FromDiff(Diff diff)
         {
             if (diff is EmptyDiff)
@@ -61,13 +61,13 @@ namespace APIComparer
             removedTypes.AddRange(currentObsoletes);
 
             var typesWithMemberDiffs = publicTypeDiffs
-              .Where(td => td.LeftType.IsPublic && 
+              .Where(td => td.LeftType.IsPublic &&
               !td.LeftType.IsObsoleteWithError() &&
               td.HasDifferences())
               .ToList();
 
             var removedMethods = typesWithMemberDiffs
-                .SelectMany(td => td.LeftOrphanMethods.Where(t=>t.IsPublic))
+                .SelectMany(td => td.LeftOrphanMethods.Where(t => t.IsPublic))
                 .Select(md => new
                 {
                     Version = "Current",
@@ -78,8 +78,8 @@ namespace APIComparer
 
             var methodsNotAvailableForUse = typesWithMemberDiffs
                 .SelectMany(td => td.MatchingMethods
-                    .Where(mm=>!mm.Right.IsPublic || mm.Right.HasObsoleteAttribute())
-                    .Select(mm=>mm.Right))
+                    .Where(mm => mm.Left.IsPublic && (!mm.Right.IsPublic || mm.Right.HasObsoleteAttribute()))
+                    .Select(mm => mm.Right))
                 .Select(rm => new
                 {
                     Version = rm.HasObsoleteAttribute() ? rm.GetObsoleteInfo().TargetVersion : "Current",
@@ -102,7 +102,7 @@ namespace APIComparer
 
 
             var removedFields = typesWithMemberDiffs
-                .SelectMany(td => td.LeftOrphanFields.Where(t=>t.IsPublic))
+                .SelectMany(td => td.LeftOrphanFields.Where(t => t.IsPublic))
                 .Select(fd => new
                 {
                     Version = "Current",
@@ -151,14 +151,14 @@ namespace APIComparer
 
             foreach (var futureVersion in uniqueFutureVersions)
             {
-                var obsoletesForVersion = futureObsoletes.SingleOrDefault(fo=>
-                fo.Key == futureVersion)?.Select(fo=>fo.RemovedType).ToList() 
+                var obsoletesForVersion = futureObsoletes.SingleOrDefault(fo =>
+                fo.Key == futureVersion)?.Select(fo => fo.RemovedType).ToList()
                 ?? new List<RemovedType>();
 
                 var changesForVersion = futureChanges.SingleOrDefault(fc =>
          fc.Key == futureVersion)?
          .GroupBy(fc => fc.Type)
-         .Select(fc=>new ChangedType(fc.Key,fc.Select(rm=>rm.RemovedMember).ToList())).ToList()
+         .Select(fc => new ChangedType(fc.Key, fc.Select(rm => rm.RemovedMember).ToList())).ToList()
          ?? new List<ChangedType>();
 
                 result.Add(new ApiChanges(futureVersion, obsoletesForVersion, changesForVersion));

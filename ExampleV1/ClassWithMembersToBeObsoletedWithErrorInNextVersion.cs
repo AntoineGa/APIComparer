@@ -15,6 +15,11 @@ namespace Example
             
         }
 
+        internal void InternalMethodWithNoChangeShouldNotBeIncluded()
+        {
+            
+        }
+
 #pragma warning disable 169
         string nonPublicFieldShouldNotBeIncluded;
 #pragma warning restore 169

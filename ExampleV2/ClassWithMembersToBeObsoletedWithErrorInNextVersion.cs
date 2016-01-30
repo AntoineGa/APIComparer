@@ -14,5 +14,10 @@ namespace Example
         public void Method()
         {
         }
+        
+        internal void InternalMethodWithNoChangeShouldNotBeIncluded()
+        {
+
+        }
     }
 }
