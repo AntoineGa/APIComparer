@@ -6,7 +6,9 @@
         {
             AsError = asError;
             RawMessage = message;
+            Message = CleanupMessage(message);
         }
+
         public bool AsError { get;}
 
         public string RawMessage { get; }
@@ -31,19 +33,36 @@
             }
         }
 
-        public string Message
+        public string Message { get; }
+
+        string CleanupMessage(string rawMessage)
         {
-            get
+            var message = CleanupRemoveInVersion(rawMessage);
+
+            return CleanupTreatAsErrorInVersion(message);
+        }
+
+        string CleanupRemoveInVersion(string rawMessage)
+        {
+            var trimStart = rawMessage.IndexOf(REMOVE_IN_VERSION);
+
+            if (trimStart > 0)
             {
-                var trimStart = RawMessage.IndexOf(REMOVE_IN_VERSION);
-
-                if (trimStart > 0)
-                {
-                    return RawMessage.Substring(0, trimStart).Trim();
-                }
-
-                return RawMessage;
+                return rawMessage.Substring(0, trimStart).Trim();
             }
+
+            return rawMessage;
+        }
+        string CleanupTreatAsErrorInVersion(string rawMessage)
+        {
+            var trimStart = rawMessage.IndexOf(ERROR_FROM_VERSION);
+
+            if (trimStart > 0)
+            {
+                return rawMessage.Substring(0, trimStart).Trim();
+            }
+
+            return rawMessage;
         }
 
         const string ERROR_FROM_VERSION = "Will be treated as an error from version";
