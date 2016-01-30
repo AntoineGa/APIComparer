@@ -19,5 +19,9 @@ namespace Example
         {
 
         }
+
+#pragma warning disable 169
+        internal string InternalFieldWithNoChangeShouldNotBeIncluded;
+#pragma warning restore 169
     }
 }

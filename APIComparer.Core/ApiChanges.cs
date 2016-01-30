@@ -90,7 +90,7 @@ namespace APIComparer
 
             var fieldsNotAvailableForUse = typesWithMemberDiffs
                .SelectMany(td => td.MatchingFields
-                   .Where(mf => !mf.Right.IsPublic || mf.Right.HasObsoleteAttribute())
+                   .Where(mf => mf.Left.IsPublic && (!mf.Right.IsPublic || mf.Right.HasObsoleteAttribute()))
                    .Select(mf => mf.Right))
                .Select(rm => new
                {
