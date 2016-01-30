@@ -9,5 +9,14 @@ namespace Example
         public void Method()
         {
         }
+
+        void nonPublicMethodShouldNotBeIncluded()
+        {
+            
+        }
+
+#pragma warning disable 169
+        string nonPublicFieldShouldNotBeIncluded;
+#pragma warning restore 169
     }
 }

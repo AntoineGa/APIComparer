@@ -67,7 +67,7 @@ namespace APIComparer
               .ToList();
 
             var removedMethods = typesWithMemberDiffs
-                .SelectMany(td => td.LeftOrphanMethods)
+                .SelectMany(td => td.LeftOrphanMethods.Where(t=>t.IsPublic))
                 .Select(md => new
                 {
                     Version = "Current",
@@ -102,7 +102,7 @@ namespace APIComparer
 
 
             var removedFields = typesWithMemberDiffs
-                .SelectMany(td => td.LeftOrphanFields)
+                .SelectMany(td => td.LeftOrphanFields.Where(t=>t.IsPublic))
                 .Select(fd => new
                 {
                     Version = "Current",
